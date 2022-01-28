@@ -1,4 +1,3 @@
 # Avance
 #### Desarrollo del trabajo de Titulación
-#### David Rivera
-#### 2022
+#### David Rivera - 2022
