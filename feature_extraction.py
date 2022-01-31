@@ -1,7 +1,8 @@
 import imageio
-from cv2 import cv2
-import numpy as np
+
 import cpbd
+import numpy as np
+from cv2 import cv2
 from scipy.stats import entropy
 
 
@@ -12,11 +13,10 @@ class Image:
         self.image_hsl = imageio.imread(self.path, pilmode="L")
         self.height, self.width = self.image.shape[:2]
 
-    def rgb_to_relative_luminance(self, xpixel: int, ypixel: int) -> float:
+    def __rgb_to_relative_luminance(self, xpixel: int, ypixel: int) -> float:
         blue, green, red = self.image[xpixel, ypixel]
         relative_luminance = ((0.2126 * red) + (0.7152 * green) + (0.0722 * blue)) / 255
 
-        # return round(relative_luminance, 4)
         return relative_luminance
 
     def get_luminance(self) -> str:
@@ -28,7 +28,7 @@ class Image:
 
         for ypix in range(self.height):
             for xpix in range(self.width):
-                luminance = self.rgb_to_relative_luminance(ypix, xpix)
+                luminance = self.__rgb_to_relative_luminance(ypix, xpix)
                 avg_luminance.append(luminance)
                 if luminance < 0.315:
                     dark += 1
@@ -37,20 +37,13 @@ class Image:
                 else:
                     bright += 1
 
-        # print(luminance)
-        # return round((sum(avg_luminance) / len(avg_luminance)), 4)
-        # return round(luminance, 4)
-
         if (dark > semidark) and (dark > bright):
             a = [i for i in avg_luminance if (i < 0.315)]
             return round((sum(a) / len(a)), 4)
-            # return "dark"
         elif (semidark > dark) and (semidark > bright):
             a = [i for i in avg_luminance if (0.315 <= i <= 0.615)]
             return round((sum(a) / len(a)), 4)
-            # return "semidark"
         else:
-            # return "bright"
             a = [i for i in avg_luminance if (i > 0.615)]
             return round((sum(a) / len(a)), 4)
 

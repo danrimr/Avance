@@ -1,4 +1,4 @@
-from image_quality_assessment import Image
+from feature_extraction import Image
 import threading
 import cv2, time
 import urllib.request
