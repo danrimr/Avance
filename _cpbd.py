@@ -7,7 +7,7 @@ from sys import argv
 
 import numpy as np
 from skimage.feature import canny
-from cpbd.octave import sobel
+from _octave import sobel
 
 
 # threshold to characterize blocks as edge/non-edge blocks

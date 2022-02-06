@@ -1,6 +1,6 @@
 import imageio
-from compute_cpbd import compute
 import numpy as np
+from _cpbd import compute
 from cv2 import cv2
 from scipy.stats import entropy
 
