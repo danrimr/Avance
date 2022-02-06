@@ -1,4 +1,5 @@
 import imageio
+from concurrent import futures
 
 import cpbd
 import numpy as np
@@ -10,60 +11,50 @@ class Image:
     def __init__(self, path: str = "") -> None:
         self.path = path
         self.image = cv2.imread(self.path)
+        self.image_gray = cv2.imread(self.path, 0)
+        self.image_xyz = cv2.cvtColor(self.image, cv2.COLOR_BGR2XYZ)
         self.image_hsl = imageio.imread(self.path, pilmode="L")
         self.height, self.width = self.image.shape[:2]
 
-    def __rgb_to_relative_luminance(self, xpixel: int, ypixel: int) -> float:
-        blue, green, red = self.image[xpixel, ypixel]
-        relative_luminance = ((0.2126 * red) + (0.7152 * green) + (0.0722 * blue)) / 255
-
-        return relative_luminance
-
-    def get_luminance(self) -> str:
-        dark = 0
-        semidark = 0
-        bright = 0
-
-        avg_luminance = []
-
-        for ypix in range(self.height):
-            for xpix in range(self.width):
-                luminance = self.__rgb_to_relative_luminance(ypix, xpix)
-                avg_luminance.append(luminance)
-                if luminance < 0.315:
-                    dark += 1
-                elif 0.315 <= luminance <= 0.615:
-                    semidark += 1
-                else:
-                    bright += 1
-
-        if (dark > semidark) and (dark > bright):
-            a = [i for i in avg_luminance if (i < 0.315)]
-            return round((sum(a) / len(a)), 4)
-        elif (semidark > dark) and (semidark > bright):
-            a = [i for i in avg_luminance if (0.315 <= i <= 0.615)]
-            return round((sum(a) / len(a)), 4)
-        else:
-            a = [i for i in avg_luminance if (i > 0.615)]
-            return round((sum(a) / len(a)), 4)
-
     def get_sharpness(self) -> str:
-        sharp_value = cpbd.compute(self.image_hsl)  # [0.2 - 0.4]
+        # sharp_value = cpbd.compute(self.image_hsl)  # [0.2 - 0.4]
+        from compute_cpbd import compute
+
+        sharp_value = compute(self.image_hsl)
         return round(sharp_value, 4)
 
-    def get_average_information_entropy(self) -> float:
-        histogram = [0] * 256
+    def get_colorfulness(self):
 
-        for ypix in range(self.height):
-            for xpix in range(self.width):
-                blue, green, red = self.image[ypix, xpix]
-                grayscale_pixel = 0.299 * red + 0.587 * green + 0.114 * blue
-                histogram[int(grayscale_pixel)] = histogram[int(grayscale_pixel)] + 1
+        blue, green, red = cv2.split(self.image.astype("float"))
+        rg = np.absolute(red - green)
+        yb = np.absolute(0.5 * (red + green) - blue)
+        rbMean, rbStd = (np.mean(rg), np.std(rg))
+        ybMean, ybStd = (np.mean(yb), np.std(yb))
+        stdRoot = np.sqrt((rbStd ** 2) + (ybStd ** 2))
+        meanRoot = np.sqrt((rbMean ** 2) + (ybMean ** 2))
 
-        histogram = np.asarray(histogram)
+        return round(stdRoot + (0.3 * meanRoot), 4)
+
+    def get_avg_luminance(self):
+        _, y, _ = cv2.split(self.image_xyz)
+        y = y / 255
+        dark = y[y < 0.135]
+        normal = y[(y >= 0.135) & (y <= 0.615)]
+        brihgt = y[y > 0.615]
+
+        if dark.size > normal.size and dark.size > brihgt.size:
+            luminance = sum(dark) / len(dark)
+        elif normal.size > dark.size and normal.size > brihgt.size:
+            luminance = sum(normal) / len(normal)
+        else:
+            luminance = sum(brihgt) / len(brihgt)
+
+        return round(luminance, 4)
+
+    def get_avg_information(self):
+        histogram = cv2.calcHist([self.image_gray], [0], None, [256], [0, 256])
         prob_density = histogram / (self.height * self.width)
-
-        info_entropy = entropy(prob_density)
+        info_entropy = float(entropy(prob_density))
         aux_var = 0
 
         for i in range(3):
@@ -72,17 +63,12 @@ class Image:
 
         return round(avg_infor_entropy, 4)
 
-    def get_colorfulness(self):
+    def get_features(self):
+        features = [
+            self.get_sharpness(),
+            self.get_avg_luminance(),
+            self.get_avg_information(),
+            self.get_colorfulness(),
+        ]
 
-        blue, green, red = cv2.split(self.image.astype("float"))
-
-        rg = np.absolute(red - green)
-        yb = np.absolute(0.5 * (red + green) - blue)
-
-        rbMean, rbStd = (np.mean(rg), np.std(rg))
-        ybMean, ybStd = (np.mean(yb), np.std(yb))
-
-        stdRoot = np.sqrt((rbStd ** 2) + (ybStd ** 2))
-        meanRoot = np.sqrt((rbMean ** 2) + (ybMean ** 2))
-
-        return round(stdRoot + (0.3 * meanRoot), 4)
+        return features
