@@ -1,7 +1,5 @@
 import imageio
-from concurrent import futures
-
-import cpbd
+from compute_cpbd import compute
 import numpy as np
 from cv2 import cv2
 from scipy.stats import entropy
@@ -17,9 +15,6 @@ class Image:
         self.height, self.width = self.image.shape[:2]
 
     def get_sharpness(self) -> str:
-        # sharp_value = cpbd.compute(self.image_hsl)  # [0.2 - 0.4]
-        from compute_cpbd import compute
-
         sharp_value = compute(self.image_hsl)
         return round(sharp_value, 4)
 
