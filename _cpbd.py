@@ -1,9 +1,8 @@
-# coding: utf-8
+"""Docs"""
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from math import atan2, pi
-from sys import argv
 
 import numpy as np
 from skimage.feature import canny
@@ -23,8 +22,7 @@ BLOCK_HEIGHT, BLOCK_WIDTH = (64, 64)
 WIDTH_JNB = np.concatenate([5 * np.ones(51), 3 * np.ones(205)])
 
 
-def compute(image):
-    # type: (numpy.ndarray) -> float
+def compute(image: np.ndarray) -> float:
     """Compute the sharpness metric for the given data."""
 
     # convert the image to double for further processing
@@ -43,8 +41,7 @@ def compute(image):
     return _calculate_sharpness_metric(image, canny_edges, marziliano_widths)
 
 
-def marziliano_method(edges, image):
-    # type: (numpy.ndarray, numpy.ndarray) -> numpy.ndarray
+def marziliano_method(edges: np.ndarray, image: np.ndarray) -> np.ndarray:
     """
     Calculate the widths of the given edges.
 
@@ -158,8 +155,9 @@ def marziliano_method(edges, image):
     return edge_widths
 
 
-def _calculate_sharpness_metric(image, edges, edge_widths):
-    # type: (numpy.array, numpy.array, numpy.array) -> numpy.float64
+def _calculate_sharpness_metric(
+    image: np.ndarray, edges: np.ndarray, edge_widths: np.ndarray
+) -> np.float64:
 
     # get the size of image
     img_height, img_width = image.shape
@@ -206,20 +204,19 @@ def _calculate_sharpness_metric(image, edges, edge_widths):
     return np.sum(hist_pblur[:64])
 
 
-def is_edge_block(block, threshold):
-    # type: (numpy.ndarray, float) -> bool
+def is_edge_block(block: np.ndarray, threshold: float) -> bool:
     """Decide whether the given block is an edge block."""
     return np.count_nonzero(block) > (block.size * threshold)
 
 
-def get_block_contrast(block):
-    # type: (numpy.ndarray) -> int
+def get_block_contrast(block: np.ndarray) -> int:
+    """Docs"""
     return int(np.max(block) - np.min(block))
 
 
-if __name__ == "__main__":
-    # input_image = imread(argv[1], mode="L")
-    from imageio import imread
+# if __name__ == "__main__":
+#     # input_image = imread(argv[1], mode="L")
+#     from imageio import imread
 
-    sharpness = compute(input_image)
-    print("CPBD sharpness for %s: %f" % (argv[1], sharpness))
+#     sharpness = compute(input_image)
+#     print("CPBD sharpness for %s: %f" % (argv[1], sharpness))
