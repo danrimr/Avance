@@ -11,7 +11,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 # from sklearn.tree import DecisionTreeClassifier
 
 
-class GetModel:
+class Model:
     """doc"""
 
     def __init__(self, dataset: pd.DataFrame = None) -> None:
@@ -23,6 +23,9 @@ class GetModel:
     def from_csv(cls, csv_path: str = None):
         """Docs"""
         return cls(pd.read_csv(csv_path))
+
+    def lda_reduction(self):
+        ...
 
     def __create_model(self):
         self.model = LDA()

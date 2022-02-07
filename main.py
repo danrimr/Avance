@@ -1,13 +1,14 @@
 """Docs"""
 from camera_widget import CameraWidget
 from feature_extraction import Image
-from prediction_model import GetModel
+from classification import Classifier
 
 
 def main():
     """Docs"""
-    model = GetModel.from_csv("features_2.csv")
-    print(model.get_scores())
+    model = Classifier.from_csv("features_3.csv")
+    model.make_classifier()
+    print(model.get_model_score())
     # rtsp_server = "http://192.168.1.5:8080/shot.jpg"
     camera = CameraWidget(1)
     camera.start_stream()
@@ -16,8 +17,7 @@ def main():
         image = Image(camera.dst)
         features = image.get_features()
         camera.save_frame()
-        # camera.set_text(model.get_prediction([features])[0])
-        # print(features)
+        print(features)
         print(model.get_prediction([features]))
 
 
