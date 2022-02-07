@@ -1,12 +1,14 @@
+"""Docs"""
 from camera_widget import CameraWidget
 from feature_extraction import Image
 from prediction_model import GetModel
 
 
 def main():
+    """Docs"""
     model = GetModel.from_csv("features_2.csv")
-    # print(model.get_scores())
-    rtsp_server = "http://192.168.1.5:8080/shot.jpg"
+    print(model.get_scores())
+    # rtsp_server = "http://192.168.1.5:8080/shot.jpg"
     camera = CameraWidget(1)
     camera.start_stream()
 
