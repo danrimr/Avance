@@ -1,42 +1,39 @@
 """Docs"""
 
+import time
 import serial
 
 
 class LightControl:
     """Docs"""
 
-    def __init__(self) -> None:
-        # define serial parameters
-        serial_port = serial.Serial(
-            port="COM4",
-            baudrate=9600,
+    def __init__(self, port: str = "COM3", bauds: int = 9600) -> None:
+        self.serial_port = serial.Serial(
+            port=port,
+            baudrate=bauds,
             bytesize=8,
-            timeout=2,
+            timeout=1,
             stopbits=serial.STOPBITS_ONE,
         )
+        self.data: int
+        time.sleep(1)
 
-    def send_data(self) -> None:
-        """Send data by the specified serial port."""
-        ...
+    def send_data(self, data) -> None:
+        """Docs."""
+        if data < 1.0:
+            self.serial_port.write("1".encode("ascii"))
+        elif data > 1.3:
+            self.serial_port.write("0".encode("ascii"))
+        # self.serial_port.write(f"{data}".encode("ascii"))
+        # print(data)
 
-    def automatic_control(self, light_status: int) -> None:
+    def automatic_control(self, luminance_value: float) -> None:
         """Docs"""
-        if light_status == 1:
-            # ... # reduce error
-            while error > 0.3:
-                ...  # increase light
 
-        else:
-            if light_status == 0:
-                ...  # increase light
+        if not (1 <= luminance_value <= 1.3):
+            if luminance_value < 1:
+                self.send_data("more light")
             else:
-                ...  # decrease light
-
-    def get_light_status(self) -> str:
-        """Docs"""
-        ...
-
-    def get_variable_data(self) -> str:
-        """Docs"""
-        ...
+                self.send_data("less light")
+        else:
+            self.send_data("keep light")

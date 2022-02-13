@@ -5,21 +5,23 @@ import numpy as np
 import pandas as pd
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.model_selection import RepeatedStratifiedKFold, cross_val_score
+from sklearn.metrics import r2_score, mean_squared_error
 
 # from sklearn.tree import DecisionTreeClassifier as DTC
 
 from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import LinearRegression
 
 
 class Classifier:
     """Docs."""
 
-    def __init__(self, dataset: pd.DataFrame) -> None:
+    def __init__(self, dataset: pd.DataFrame, model: str = "linear") -> None:
         self.dataset = dataset
         self.y_data: pd.DataFrame
         self.x_data: pd.DataFrame
-        self.lda: LDA
-        self.model: GaussianNB
+        self.lda = LDA(n_components=2)
+        self.model = LinearRegression() if model == "linear" else GaussianNB()
 
     def make_classifier(self) -> None:
         """Docs."""
@@ -33,43 +35,46 @@ class Classifier:
         self.x_data = self.dataset.drop(["class"], axis=1)
 
     def __lda_reduction(self) -> None:
-        self.lda = LDA(n_components=2)
         self.x_data = self.lda.fit_transform(self.x_data.values, self.y_data)
 
     def __training_model(self) -> None:
-        self.model = GaussianNB()
         self.model.fit(self.x_data, self.y_data)
 
     def get_model_score(self) -> list:
         """Docs."""
 
-        cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
-        scores = cross_val_score(
-            self.model,
-            self.x_data,
-            self.y_data,
-            scoring="accuracy",
-            cv=cv,
-            n_jobs=-1,
-            error_score="raise",
-        )
+        if not isinstance(self.model, LinearRegression):
 
-        mean_score = np.mean(scores)
-        std_score = np.std(scores)
+            cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+            scores = cross_val_score(
+                self.model,
+                self.x_data,
+                self.y_data,
+                scoring="accuracy",
+                cv=cv,
+                n_jobs=-1,
+                error_score="raise",
+            )
+            mean_score = np.mean(scores)
+            std_score = np.std(scores)
+        else:
+            mean_score = None
+            std_score = None
 
-        return list((round(mean_score, 4), round(std_score, 4)))
+        return list((mean_score, std_score))
 
-    def get_prediction(self, test_data: np.ndarray) -> np.ndarray:
+    def get_prediction(self, test_data: np.ndarray) -> list:
         """Docs."""
 
         data = self.lda.transform(test_data)
-        return self.model.predict(data)
+        prediction = self.model.predict(data)
+        return list((prediction))
 
     def get_model(self):
         """Docs."""
         return self.model
 
     @classmethod
-    def from_csv(cls, csv_path: str) -> Classifier:
+    def from_csv(cls, csv_path: str, model: str = "linear") -> Classifier:
         """Docs."""
-        return cls(pd.read_csv(csv_path))
+        return cls(pd.read_csv(csv_path), model)
