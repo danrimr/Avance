@@ -63,18 +63,14 @@ void loop()
         {
             outVal = 30;
         }
-        if (outVal > 80)
+        if (outVal > 85)
         {
-            outVal = 80;
+            outVal = 85;
         }
     }
 
     if (USE_SERIAL.available())
     {
-        // int buf = USE_SERIAL.parseInt();
-        // if (buf != 0)
-        //     outVal = buf;
-        // delay(200);
         USE_SERIAL.println("Incomming data...");
         BTbuff = USE_SERIAL.read();
         if (String(BTbuff) == "0")
