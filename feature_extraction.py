@@ -1,5 +1,3 @@
-"""Docs"""
-
 import imageio
 import numpy as np
 from scipy.stats import entropy
@@ -9,7 +7,7 @@ from _cpbd import compute
 
 
 class Image:
-    """Docs"""
+    """Docs."""
 
     def __init__(self, path: str = "") -> None:
         self.path = path
@@ -19,13 +17,16 @@ class Image:
         self.image_hsl = imageio.imread(self.path, pilmode="L")
         self.height, self.width = self.image.shape[:2]
 
-    def get_sharpness(self) -> str:
-        """Docs"""
+    def get_sharpness(self) -> float:
+        """Compute the sharpness of an image based on cpbd (cumulative
+        probability of blur detection) metric."""
+
         sharp_value = compute(self.image_hsl)
         return round(sharp_value, 4)
 
-    def get_colorfulness(self):
-        """Docs"""
+    def get_colorfulness(self) -> float:
+        """Compute the color variance present in the image."""
+
         blue, green, red = cv2.split(self.image.astype("float"))
         rg = np.absolute(red - green)
         yb = np.absolute(0.5 * (red + green) - blue)
@@ -36,8 +37,9 @@ class Image:
 
         return round(stdRoot + (0.3 * meanRoot), 4)
 
-    def get_avg_luminance(self):
-        """Docs"""
+    def get_avg_luminance(self) -> float:
+        """Compute the average relative luminance of an sRGB image."""
+
         _, y, _ = cv2.split(self.image_xyz)
         y = y / 255
         dark = y[y < 0.135]
@@ -53,8 +55,9 @@ class Image:
 
         return round(luminance, 4)
 
-    def get_avg_information(self):
-        """Docs"""
+    def get_avg_information(self) -> float:
+        """Calculate the information entropy of the gray channel."""
+
         histogram = cv2.calcHist([self.image_gray], [0], None, [256], [0, 256])
         prob_density = histogram / (self.height * self.width)
         info_entropy = float(entropy(prob_density))
@@ -66,8 +69,9 @@ class Image:
 
         return round(avg_infor_entropy, 4)
 
-    def get_features(self):
-        """Docs"""
+    def get_features(self) -> list:
+        """Compute all the features metrics in the class."""
+
         features = [
             self.get_sharpness(),
             self.get_avg_luminance(),

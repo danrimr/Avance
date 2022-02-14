@@ -7,6 +7,8 @@ import urllib.request
 
 
 class CameraWidget:
+    """Allows to show the source frames in a different thread."""
+
     def __init__(self, src=0, dst="test/test.jpg") -> None:
         if isinstance(src, int):
             self.capture = cv2.VideoCapture(src, cv2.CAP_DSHOW)
@@ -18,7 +20,8 @@ class CameraWidget:
         self.dst = dst
         self.text = ""
 
-    def show_frame(self):
+    def show_frame(self) -> None:
+        """Shows a frame from a camera source in a cv2 windows widget."""
         while True:
             if self.capture.isOpened():
                 self.status, self.frame = self.capture.read()
@@ -39,7 +42,8 @@ class CameraWidget:
                 cv2.destroyAllWindows()
                 sys.exit(0)
 
-    def show_ip_frame(self):
+    def show_ip_frame(self) -> None:
+        """Shows a frame from a web source in a cv2 windows widget."""
         while True:
             frame_resp = urllib.request.urlopen(self.url)
             frame_array = np.array(bytearray(frame_resp.read()), dtype=np.uint8)
@@ -49,13 +53,16 @@ class CameraWidget:
                 cv2.destroyAllWindows()
                 sys.exit(0)
 
-    def save_frame(self):
+    def save_frame(self) -> None:
+        """Saves the current frame in local storage."""
         cv2.imwrite(self.dst, self.frame)
 
-    def start_stream(self):
+    def start_stream(self) -> None:
+        """Starts the frames stream in a different thread."""
         self.widget_thread = Thread(target=self.target)
         self.widget_thread.daemon = True
         self.widget_thread.start()
 
-    def set_text(self, text):
+    def set_text(self, text) -> None:
+        """Add in-frame text to the current capture frame."""
         self.text = text

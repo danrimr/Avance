@@ -1,4 +1,3 @@
-"""Docs."""
 from __future__ import annotations
 
 import numpy as np
@@ -14,7 +13,7 @@ from sklearn.linear_model import LinearRegression
 
 
 class Classifier:
-    """Docs."""
+    """Permits to create, train and test a model ["LinearRegression", "GaussianNB"]."""
 
     def __init__(self, dataset: pd.DataFrame, model: str = "linear") -> None:
         self.dataset = dataset
@@ -24,7 +23,7 @@ class Classifier:
         self.model = LinearRegression() if model == "linear" else GaussianNB()
 
     def make_classifier(self) -> None:
-        """Docs."""
+        """Creates and trains the model."""
 
         self.__dataset_preprocessiong()
         self.__lda_reduction()
@@ -41,7 +40,7 @@ class Classifier:
         self.model.fit(self.x_data, self.y_data)
 
     def get_model_score(self) -> list:
-        """Docs."""
+        """Compute the mean score and standard deviation from the GaussianNB model."""
 
         if not isinstance(self.model, LinearRegression):
 
@@ -64,17 +63,17 @@ class Classifier:
         return list((mean_score, std_score))
 
     def get_prediction(self, test_data: np.ndarray) -> list:
-        """Docs."""
+        """Predicts the class of the input data."""
 
         data = self.lda.transform(test_data)
         prediction = self.model.predict(data)
         return list((prediction))
 
-    def get_model(self):
-        """Docs."""
+    def get_model(self) -> Classifier.model:
+        """Returns the current model."""
         return self.model
 
     @classmethod
     def from_csv(cls, csv_path: str, model: str = "linear") -> Classifier:
-        """Docs."""
+        """Creates the model from a cvs file."""
         return cls(pd.read_csv(csv_path), model)
